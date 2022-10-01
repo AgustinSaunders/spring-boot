@@ -1,6 +1,6 @@
 package com.curso.sprignboot.cursoSB.configuration;
 
-import com.curso.sprignboot.cursoSB.beam.*;
+import com.curso.sprignboot.cursoSB.bean.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
