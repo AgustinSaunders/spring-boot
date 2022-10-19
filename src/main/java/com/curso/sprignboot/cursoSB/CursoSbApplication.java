@@ -7,13 +7,13 @@ import com.curso.sprignboot.cursoSB.bean.PropertiesBean;
 import com.curso.sprignboot.cursoSB.component.ComponentDependency;
 import com.curso.sprignboot.cursoSB.entity.User;
 import com.curso.sprignboot.cursoSB.repository.UserRepository;
+import com.curso.sprignboot.cursoSB.service.UserService;
 import org.apache.juli.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.domain.Sort;
-
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +27,7 @@ public class CursoSbApplication implements CommandLineRunner {
 	private MyBeanWithDependency myBeanWithDependency;
 	private ComponentDependency componentDependency;
 	private UserRepository userRepository;
+	private UserService userService;
 	private UserPojo userPojo;
 	//We have two classes which implements the same dependency
 	//So this will generate an error unless we specify which class we want to use
@@ -34,13 +35,15 @@ public class CursoSbApplication implements CommandLineRunner {
 	//followed by the name of the class we are going to use but in lower camel case
 	public CursoSbApplication(@Qualifier("componentTwoImplement") ComponentDependency componentDependency,
 							  MyBean myBean, MyBeanWithDependency myBeanWithDependency,
-							  PropertiesBean propertiesBean, UserPojo userPojo, UserRepository userRepository){
+							  PropertiesBean propertiesBean, UserPojo userPojo, UserRepository userRepository,
+							  UserService userService){
 		this.componentDependency = componentDependency;
 		this.myBean = myBean;
 		this.myBeanWithDependency = myBeanWithDependency;
 		this.propertiesBean = propertiesBean;
 		this.userPojo = userPojo;
 		this.userRepository = userRepository;
+		this.userService = userService;
 	}
 
 
@@ -53,6 +56,27 @@ public class CursoSbApplication implements CommandLineRunner {
 		//pastExamples();
 		saveUsersInDataBase();
 		getInformationJpqlFromUser();
+		saveWithErrorTransactional();
+	}
+
+	private void saveWithErrorTransactional(){
+		User test1 = new User("TestTransactional1", "testtransactional1@domain.com",
+				LocalDate.now());
+		User test2 = new User("TestTransactional2", "testtransactional2@domain.com",
+				LocalDate.now());
+		User test3 = new User("TestTransactional3", "testtransactional1@domain.com",
+				LocalDate.now());
+		User test4 = new User("TestTransactional4", "testtransactional4@domain.com",
+				LocalDate.now());
+
+		List<User> users = Arrays.asList(test1, test2, test3, test4);
+
+		try {
+			userService.saveTransactional(users);
+		}catch(Exception e){
+			LOGGER.error("This is an exception inside transactional method " + e);
+		}
+		userService.getAllUsers().forEach(LOGGER::info);
 	}
 
 	private void getInformationJpqlFromUser(){
